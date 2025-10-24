@@ -1,0 +1,22 @@
+# NetBeans-specific
+nbproject/private/
+
+# Build output directories
+/build/
+/dist/
+nbbuild/
+nbdist/
+
+# Compiled class files
+*.class
+
+# Logs and backup files
+/logs/
+*.log
+*.bak
+*~
+*.swp
+
+# macOS / Windows system files
+.DS_Store
+Thumbs.db
