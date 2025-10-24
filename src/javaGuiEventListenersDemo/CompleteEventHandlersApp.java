@@ -14,8 +14,10 @@ import java.awt.event.*;
  * Complete Java Swing Event Handlers Learning Application
  *
  * This application demonstrates ALL major event listeners in Java Swing/AWT.
- * Each event handler is documented with comments explaining: - What triggers
- * the event - When to use it - Common use cases
+ * Each event handler is documented with comments explaining.
+ *   - What triggers the event
+ *   - When to use it
+ *   - Common use cases
  *
  * Total Event Handlers Demonstrated: 25+ interfaces with 70+ methods
  */
