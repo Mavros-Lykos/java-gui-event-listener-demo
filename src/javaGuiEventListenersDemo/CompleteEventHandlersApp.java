@@ -4,19 +4,23 @@ import com.formdev.flatlaf.FlatLightLaf;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.undo.UndoableEdit;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.VetoableChangeListener;
-import java.util.List;
 
-
+/**
+ * Complete Java Swing Event Handlers Learning Application
+ *
+ * This application demonstrates ALL major event listeners in Java Swing/AWT.
+ * Each event handler is documented with comments explaining.
+ *   - What triggers the event
+ *   - When to use it
+ *   - Common use cases
+ *
+ * Total Event Handlers Demonstrated: 25+ interfaces with 70+ methods
+ */
 public class CompleteEventHandlersApp extends JFrame {
 
     private JTextArea eventLog;
@@ -841,3 +845,82 @@ public class CompleteEventHandlersApp extends JFrame {
     }
 }
 
+/*
+ * COMPLETE EVENT HANDLERS SUMMARY:
+ * 
+ * This application demonstrates 30+ event listener interfaces with 70+ methods:
+ * 
+ * BASIC EVENT LISTENERS:
+ * 1. ActionListener - actionPerformed() - Button clicks, menu selections
+ * 2. ItemListener - itemStateChanged() - Checkbox, radio button, combobox changes
+ * 3. ChangeListener - stateChanged() - Slider, spinner, progress bar changes
+ * 4. ListSelectionListener - valueChanged() - JList selection changes
+ * 
+ * MOUSE & KEY LISTENERS:
+ * 5. MouseListener - mouseClicked(), mousePressed(), mouseReleased(), mouseEntered(), mouseExited()
+ * 6. MouseMotionListener - mouseDragged(), mouseMoved()
+ * 7. MouseWheelListener - mouseWheelMoved()
+ * 8. KeyListener - keyPressed(), keyReleased(), keyTyped()
+ * 
+ * COMPONENT LISTENERS:
+ * 9. FocusListener - focusGained(), focusLost()
+ * 10. ComponentListener - componentResized(), componentMoved(), componentShown(), componentHidden()
+ * 11. ContainerListener - componentAdded(), componentRemoved()
+ * 12. HierarchyListener - hierarchyChanged()
+ * 13. AncestorListener - ancestorAdded(), ancestorRemoved(), ancestorMoved()
+ * 
+ * WINDOW LISTENERS:
+ * 14. WindowListener - windowOpened(), windowClosing(), windowClosed(), windowActivated(), 
+ *                      windowDeactivated(), windowIconified(), windowDeiconified()
+ * 15. WindowFocusListener - windowGainedFocus(), windowLostFocus()
+ * 16. WindowStateListener - windowStateChanged()
+ * 17. InternalFrameListener - internalFrameOpened(), internalFrameClosing(), internalFrameClosed(),
+ *                            internalFrameActivated(), internalFrameDeactivated(), 
+ *                            internalFrameIconified(), internalFrameDeiconified()
+ * 
+ * ADVANCED LISTENERS:
+ * 18. TreeSelectionListener - valueChanged()
+ * 19. TreeExpansionListener - treeExpanded(), treeCollapsed()
+ * 20. TreeWillExpandListener - treeWillExpand(), treeWillCollapse()
+ * 21. TableModelListener - tableChanged()
+ * 22. MenuListener - menuSelected(), menuDeselected(), menuCanceled()
+ * 23. PopupMenuListener - popupMenuWillBecomeVisible(), popupMenuWillBecomeInvisible(), popupMenuCanceled()
+ * 24. PropertyChangeListener - propertyChange()
+ * 
+ * TEXT & DOCUMENT LISTENERS:
+ * 25. DocumentListener - insertUpdate(), removeUpdate(), changedUpdate()
+ * 26. UndoableEditListener - undoableEditHappened()
+ * 27. CaretListener - caretUpdate()
+ * 28. HyperlinkListener - hyperlinkUpdate()
+ * 
+ * ADAPTER CLASSES (Convenience classes that implement listeners with empty methods):
+ * - MouseAdapter (implements MouseListener, MouseMotionListener, MouseWheelListener)
+ * - KeyAdapter (implements KeyListener)
+ * - FocusAdapter (implements FocusListener)
+ * - ComponentAdapter (implements ComponentListener)
+ * - ContainerAdapter (implements ContainerListener)
+ * - WindowAdapter (implements WindowListener, WindowFocusListener, WindowStateListener)
+ * - InternalFrameAdapter (implements InternalFrameListener)
+ * - MouseMotionAdapter (implements MouseMotionListener)
+ * 
+ * USAGE PATTERNS:
+ * - Use ActionListener for button clicks, menu selections, Enter key in text fields
+ * - Use MouseListener for detecting mouse button presses, releases, and hover states
+ * - Use KeyListener for keyboard input handling and shortcuts
+ * - Use FocusListener for field validation and UI state management
+ * - Use DocumentListener for real-time text change detection
+ * - Use ComponentListener for responsive layout management
+ * - Use WindowListener for application lifecycle management
+ * - Use TreeListener for tree navigation and expansion state management
+ * - Use TableModelListener for data synchronization
+ * - Use PropertyChangeListener for bean property binding
+ * 
+ * LEARNING TIPS:
+ * 1. Most listeners follow the Observer pattern
+ * 2. Adapter classes help reduce boilerplate code
+ * 3. Event objects contain detailed information about what happened
+ * 4. Some events can be consumed to prevent further processing
+ * 5. Lambda expressions can simplify single-method listeners
+ * 6. Be careful with listeners that fire frequently (like mouseMoved)
+ * 7. Always remove listeners to prevent memory leaks in dynamic UIs
+ */
