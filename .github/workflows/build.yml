@@ -1,0 +1,126 @@
+name: Build Platform Executables
+
+on:
+  push:
+    branches: [main, master]
+    tags:
+      - "v*"
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            executable_extension: ""
+            installer_type: deb
+            artifact_name: linux
+          - os: windows-latest
+            executable_extension: ".exe"
+            installer_type: exe
+            artifact_name: windows
+          - os: macos-latest
+            executable_extension: ""
+            installer_type: dmg
+            artifact_name: macos
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Compile Java files
+        shell: bash
+        run: |
+          mkdir -p out
+          javac -cp "lib/*" -d out src/javaGuiEventListenersDemo/*.java
+
+      - name: Create manifest file
+        shell: bash
+        run: |
+          echo "Main-Class: javaGuiEventListenersDemo.CompleteEventHandlersApp" > manifest.txt
+          echo "Class-Path: lib/flatlaf-3.6.jar" >> manifest.txt
+      - name: Create JAR with dependencies
+        shell: bash
+        run: |
+          mkdir -p jar-temp
+          cd jar-temp
+          jar xf ../lib/flatlaf-3.6.jar  # or whatever your exact filename is        rm -rf META-INF/*.SF META-INF/*.DSA META-INF/*.RSA
+          cp -r ../out/* .
+          jar cfm ../EventListenersDemo.jar ../manifest.txt *
+          cd ..
+
+      - name: Build executable with jpackage (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          jpackage \
+            --input . \
+            --name EventListenersDemo \
+            --main-jar EventListenersDemo.jar \
+            --type ${{ matrix.installer_type }} \
+            --dest dist \
+            --app-version 1.0.0 \
+            --vendor "Your Name" \
+            --description "Java GUI Event Listeners Demo" \
+            --win-console
+
+      - name: Build executable with jpackage (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          jpackage \
+            --input . \
+            --name EventListenersDemo \
+            --main-jar EventListenersDemo.jar \
+            --type ${{ matrix.installer_type }} \
+            --dest dist \
+            --app-version 1.0.0 \
+            --vendor "Charaka Hashan " \
+            --description "Java GUI Event Listeners Demo"
+
+      - name: Build executable with jpackage (macOS)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          jpackage \
+            --input . \
+            --name EventListenersDemo \
+            --main-jar EventListenersDemo.jar \
+            --type ${{ matrix.installer_type }} \
+            --dest dist \
+            --app-version 1.0.0 \
+            --vendor "Your Name" \
+            --description "Java GUI Event Listeners Demo"
+
+      - name: List dist contents (debug)
+        shell: bash
+        run: |
+          echo "Contents of dist directory:"
+          ls -la dist/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: EventListenersDemo-${{ matrix.artifact_name }}
+          path: dist/*
+          retention-days: 30
+
+      - name: Create Release (on tag push)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
