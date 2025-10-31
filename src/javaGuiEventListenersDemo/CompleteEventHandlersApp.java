@@ -14,10 +14,8 @@ import java.awt.event.*;
  * Complete Java Swing Event Handlers Learning Application
  *
  * This application demonstrates ALL major event listeners in Java Swing/AWT.
- * Each event handler is documented with comments explaining.
- *   - What triggers the event
- *   - When to use it
- *   - Common use cases
+ * Each event handler is documented with comments explaining. - What triggers
+ * the event - When to use it - Common use cases
  *
  * Total Event Handlers Demonstrated: 25+ interfaces with 70+ methods
  */
@@ -32,15 +30,19 @@ public class CompleteEventHandlersApp extends JFrame {
         setupAllEventHandlers();
     }
 
-    private void setupUI() {
+ private void setupUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
+        setPreferredSize(new Dimension(1200, 800)); // preferred size
         setLayout(new BorderLayout());
 
         // Event Log Area
         eventLog = new JTextArea(15, 50);
         eventLog.setEditable(false);
-        eventLog.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        float scale = Toolkit.getDefaultToolkit().getScreenResolution() / 96f;
+        eventLog.setFont(new Font("Monospaced", Font.PLAIN, (int)(11 * scale))); // scaled font
+
         JScrollPane logScroll = new JScrollPane(eventLog);
         logScroll.setBorder(BorderFactory.createTitledBorder("Event Log - Watch Events Fire Here!"));
         add(logScroll, BorderLayout.SOUTH);
@@ -73,6 +75,8 @@ public class CompleteEventHandlersApp extends JFrame {
                 + "Each event shows the listener type, method name, and relevant data.</html>");
         instructions.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         add(instructions, BorderLayout.NORTH);
+
+        pack(); // respect preferred size of components
     }
 
     private JPanel createBasicEventsPanel() {
@@ -835,12 +839,13 @@ public class CompleteEventHandlersApp extends JFrame {
         // Set system look and feel
         try {
             FlatLightLaf.setup();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
 
         SwingUtilities.invokeLater(() -> {
-            new CompleteEventHandlersApp().setVisible(true);
+            CompleteEventHandlersApp app = new CompleteEventHandlersApp();
+            app.setVisible(true);
+            app.setLocationRelativeTo(null); // centers window
         });
     }
 }
