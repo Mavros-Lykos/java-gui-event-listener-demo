@@ -94,67 +94,96 @@ This application demonstrates **30+ event listener interfaces** with **70+ metho
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Java Development Kit (JDK) 1.8(Java 8) or higher**
-- **Maven** (for building from source) or use the pre-built `.exe` file
+- Java 8 or newer (the application runs on Java 8+)
+- NetBeans (recommended) or Apache Ant (NetBeans build scripts are provided)
 
-### Option 1: Run Pre-built Executable (Windows)
-1. Download the latest `EventListenerApp.exe` from the [Releases](../../releases) page
-2. Double-click to run
-3. No installation required!
+### Option 1: Run the Installer (Windows/macOS/Linux)
+- Download the latest installer from the Releases page: [Releases](../../releases)
+- Windows
+   - Run the Windows installer (.exe).
+   - Default install path: C:\Program Files\EventListenersDemo\
+   - Launch from Start Menu (EventListenersDemo) or run "C:\Program Files\EventListenersDemo\EventListenersDemo.exe".
+   - Uninstall via Settings > Apps > EventListenersDemo.
+- macOS
+   - Download the .dmg (or .pkg).
+   - .dmg: drag EventListenersDemo.app to Applications. .pkg: follow the installer prompts.
+   - If blocked by Gatekeeper, right-click the app and choose Open.
+- Linux
+   - Use the package for your distro if available (.deb/.rpm) or the AppImage.
+   - AppImage: chmod +x EventListenersDemo*.AppImage && ./EventListenersDemo*.AppImage
+   - DEB: sudo dpkg -i EventListenersDemo*.deb
+   - RPM: sudo rpm -i EventListenersDemo*.rpm
+- Current installers are bundled with JRE 21 for consistent behavior and HiDPI scaling—no separate Java installation required.
+- Future releases may ship without an embedded JRE; in that case, install Java 8+ and run with your system Java.
 
-### Option 2: Build from Source
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/java-gui-event-listener-demo.git
-cd java-gui-event-listener-demo
+### Option 2: Build and Run in NetBeans (recommended)
+1. Open the project folder in NetBeans.
+2. Build/Run using NetBeans (Run ▶). NetBeans uses the provided `build.xml` and project metadata.
+3. NetBeans will produce a runnable JAR in `dist/` (ignored by Git).
 
-# Run the application
-java -jar target/event-listener-app.jar
+### Option 3: Build with Ant (CLI)
+If you have Ant installed, you can use the NetBeans build script:
+
+```powershell
+# From the project root (PowerShell)
+ant clean jar
+
+# Run the generated JAR
+java -jar .\dist\javaGuiEventListenerDemo.jar
 ```
 
-### Option 3: Run Directly with Java
-```bash
-# Navigate to the src directory
-cd src
-
-# Compile
-javac Day5/CompleteEventHandlersApp.java
-
-# Run
-java Day5.CompleteEventHandlersApp
+Notes
+- If you run the JAR with an older Java (e.g., 8) on HiDPI displays and see small UI text, you can either run with a newer JDK (17+) or pass a UI scale VM option, for example:
+```powershell
+java -Dsun.java2d.uiScale=1.75 -Dflatlaf.uiScale=1.75 -jar .\dist\javaGuiEventListenerDemo.jar
 ```
+   Adjust the scale value (1.25–2.0) to taste.
 
 ---
 
-## 🏗️ Project Structure
+## 🏗️ Repository Layout
+
+This reflects the actual folders in this repository. Items ignored by Git (per `.gitignore`) are marked with [ignored].
 
 ```
 java-gui-event-listener-demo/
 │
+├── build.xml                      # NetBeans/Ant build script
+├── LICENCE                        # CC BY-NC 4.0 license
+├── manifest.mf                    # JAR manifest
+├── README.md
+│
+├── build/               [ignored] # Local build output (not tracked)
+│   └── classes/
+│
+├── lib/                          # NetBeans libraries/config
+│   ├── nblibraries.properties
+│   └── CopyLibs/
+│
+├── nbproject/                    # NetBeans project metadata
+│   ├── build-impl.xml
+│   ├── genfiles.properties
+│   ├── project.properties
+│   ├── project.xml
+│   └── private/         [ignored]
+│
+├── screenshots/                  # Application screenshots
+│   └── ...
+│
 ├── src/
-│   └── EventHandlersLearningApp/
-│       └── CompleteEventHandlersApp.java    # Main application file
+│   └── javaGuiEventListenersDemo/
+│       └── CompleteEventHandlersApp.java  # Main application
 │
-├── screenshots/                              # Application screenshots
-│   ├── basic-events.png
-│   ├── mouse-key-events.png
-│   ├── component-events.png
-│   ├── window-events.png
-│   ├── advanced-events.png
-│   ├── text-events.png
-│   └── event-log.png
-│
-├── releases/                                 # Pre-built executables
-│   └── EventListenerApp.exe                 # Windows executable
-│
-├── docs/                                     # Additional documentation
-│   ├── EVENT_HANDLERS_GUIDE.md              # Detailed guide for each listener
-│   └── ADAPTER_CLASSES.md                   # Adapter classes explained
-│
-├── pom.xml                                   # Maven build configuration
-├── LICENSE.md                                # CC BY-NC 4.0 License
-└── README.md                                 # This file
+└── test/
 ```
+
+### What’s tracked vs. ignored
+From `.gitignore`, these are not tracked by Git and won’t appear in commits:
+- NetBeans private config: `nbproject/private/`
+- Build outputs: `/build/`, `/dist/`, `nbbuild/`, `nbdist/`
+- Compiled classes: `*.class`
+- Logs/backups: `/logs/`, `*.log`, `*.bak`, `*~`, `*.swp`
+- System files: `.DS_Store`, `Thumbs.db`
 
 ---
 
@@ -162,10 +191,16 @@ java-gui-event-listener-demo/
 
 | Technology | Purpose | Version |
 |------------|---------|---------|
-| **Java** | Core programming language | 9+ |
+| **Java** | Core programming language | 8+ |
 | **Swing** | GUI framework | Built-in |
 | **AWT** | Event handling framework | Built-in |
 | **FlatLaf** | Modern look and feel theme | Latest |
+| **NetBeans + Ant** | Build/run scripts | Provided |
+
+### Runtime and Installers
+- The application runs on Java 8 and newer.
+- Official installers (current releases) are packaged with JRE 21 to ensure consistent behavior and HiDPI scaling.
+- Future releases will be provided without an embedded JRE; in that case, install Java 8+ and run the app with your system Java.
 
 
 ### Why FlatLaf?
@@ -448,3 +483,6 @@ We’ll review all submissions and merge eligible PRs marked with the `hacktober
 Even small improvements (like fixing typos, improving documentation, or cleaning up code) are welcome!
 
 Happy contributing and happy Hacktoberfest! 🌱
+
+
+[def]: ) page.
