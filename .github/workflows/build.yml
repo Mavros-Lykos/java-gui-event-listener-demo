@@ -1,7 +1,6 @@
 name: Build Platform Executables
 
 on:
-  workflow_dispatch: {}
   push:
     # automatic builds only when a version tag is pushed (eg. v1.2.3)
     tags:
