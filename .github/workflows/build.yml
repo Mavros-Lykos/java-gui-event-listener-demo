@@ -1,13 +1,10 @@
 name: Build Platform Executables
 
 on:
+  workflow_dispatch: {}
   push:
-    branches: [main, master]
     tags:
       - "v*"
-  pull_request:
-    branches: [main, master]
-  workflow_dispatch:
 
 env:
   JAVA_VERSION: "21"
@@ -99,6 +96,18 @@ jobs:
             echo "JRE_FLAG=" >> $GITHUB_ENV
           fi
 
+      - name: Prepare icon argument
+        shell: bash
+        run: |
+          ICON_PATH="${{ matrix.icon-path }}"
+          if [ -n "$ICON_PATH" ] && [ -f "$ICON_PATH" ]; then
+            echo "ICON_ARG=--icon $ICON_PATH" >> $GITHUB_ENV
+            echo "Found icon: $ICON_PATH"
+          else
+            echo "ICON_ARG=" >> $GITHUB_ENV
+            echo "Warning: icon not found at $ICON_PATH — continuing without icon"
+          fi
+
       - name: Build Windows installer (with/without JRE)
         if: matrix.os == 'windows-latest'
         shell: bash
@@ -120,7 +129,7 @@ jobs:
               --win-menu \
               --win-menu-group "${{ env.APP_NAME }}" \
               --win-per-user-install \
-              --icon ${{ matrix.icon-path }}
+              $ICON_ARG
           else
             # Without JRE: user must have Java 8+ installed
             jpackage \
@@ -137,7 +146,7 @@ jobs:
               --win-menu \
               --win-menu-group "${{ env.APP_NAME }}" \
               --win-per-user-install \
-              --icon ${{ matrix.icon-path }} \
+              $ICON_ARG \
               --runtime-image "SKIP_RUNTIME"
           fi
 
@@ -156,7 +165,7 @@ jobs:
               --vendor "${{ env.VENDOR }}" \
               --description "Java GUI Event Listeners Demo - Complete" \
               --linux-menu-group "Development" \
-              --icon ${{ matrix.icon-path }}
+              $ICON_ARG
           else
             jpackage \
               --input . \
@@ -168,7 +177,7 @@ jobs:
               --vendor "${{ env.VENDOR }}" \
               --description "Java GUI Event Listeners Demo (requires Java 8+)" \
               --linux-menu-group "Development" \
-              --icon ${{ matrix.icon-path }}
+              $ICON_ARG
           fi
 
       - name: Build macOS installer (with/without JRE)
@@ -185,7 +194,7 @@ jobs:
               --app-version ${{ env.APP_VERSION }} \
               --vendor "${{ env.VENDOR }}" \
               --description "Java GUI Event Listeners Demo - Complete" \
-              --icon ${{ matrix.icon-path }} \
+              $ICON_ARG \
               --mac-package-identifier com.charakahashan.eventlistenersdemo
           else
             jpackage \
@@ -197,7 +206,7 @@ jobs:
               --app-version ${{ env.APP_VERSION }} \
               --vendor "${{ env.VENDOR }}" \
               --description "Java GUI Event Listeners Demo (requires Java 8+)" \
-              --icon ${{ matrix.icon-path }} \
+              $ICON_ARG \
               --mac-package-identifier com.charakahashan.eventlistenersdemo
           fi
 
