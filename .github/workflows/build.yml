@@ -1,10 +1,12 @@
 name: Build Platform Executables
 
 on:
-  workflow_dispatch: {}
   push:
+    # automatic builds only when a version tag is pushed (eg. v1.2.3)
     tags:
       - "v*"
+  # allow manual runs from the Actions UI
+  workflow_dispatch:
 
 env:
   JAVA_VERSION: "21"
