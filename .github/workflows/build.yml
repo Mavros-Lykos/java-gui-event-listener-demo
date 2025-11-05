@@ -2,11 +2,10 @@ name: Build Platform Executables
 
 on:
   push:
-    branches: [main, master]
+    # automatic builds only when a version tag is pushed (eg. v1.2.3)
     tags:
       - "v*"
-  pull_request:
-    branches: [main, master]
+  # allow manual runs from the Actions UI
   workflow_dispatch:
 
 env:
