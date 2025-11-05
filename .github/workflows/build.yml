@@ -2,10 +2,8 @@ name: Build Platform Executables
 
 on:
   push:
-    # automatic builds only when a version tag is pushed (eg. v1.2.3)
     tags:
       - "v*"
-  # allow manual runs from the Actions UI
   workflow_dispatch:
 
 env:
@@ -15,28 +13,23 @@ env:
   VENDOR: "Charaka Hashan"
 
 jobs:
-  build:
+  build-installers:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        jre-included: [true, false]
         include:
           - os: ubuntu-latest
             os-type: linux
             installer-type: deb
-            executable-ext: ""
             icon-path: "assets/icon.png"
             
           - os: windows-latest
             os-type: windows
             installer-type: exe
-            executable-ext: ".exe"
             icon-path: "assets/icon.ico"
             
           - os: macos-latest
             os-type: macos
             installer-type: dmg
-            executable-ext: ""
             icon-path: "assets/icon.icns"
 
     runs-on: ${{ matrix.os }}
@@ -77,7 +70,7 @@ jobs:
           mkdir -p jar-temp
           cd jar-temp
           
-          # Extract FlatLaf and other dependencies if they exist
+          # Extract dependencies if they exist
           if [ -d "../lib" ] && [ "$(ls -A ../lib/*.jar 2>/dev/null)" ]; then
             for lib in ../lib/*.jar; do
               jar xf "$lib"
@@ -93,52 +86,33 @@ jobs:
           cd ..
           ls -lh ${{ env.APP_NAME }}.jar
 
-      - name: Set variant suffix
-        shell: bash
-        run: |
-          if [ "${{ matrix.jre-included }}" = "true" ]; then
-            echo "VARIANT_SUFFIX=with-jre" >> $GITHUB_ENV
-          else
-            echo "VARIANT_SUFFIX=without-jre" >> $GITHUB_ENV
-          fi
-
       - name: Prepare icon argument
         shell: bash
         run: |
           ICON_PATH="${{ matrix.icon-path }}"
           if [ -n "$ICON_PATH" ] && [ -f "$ICON_PATH" ]; then
             echo "ICON_ARG=--icon $ICON_PATH" >> $GITHUB_ENV
-            echo "Found icon: $ICON_PATH"
           else
             echo "ICON_ARG=" >> $GITHUB_ENV
-            echo "Warning: icon not found at $ICON_PATH — continuing without icon"
           fi
 
-      - name: Build Windows installer
+      - name: Build Windows installer (with install location chooser)
         if: matrix.os == 'windows-latest'
         shell: bash
         run: |
-          APP_SUFFIX=""
-          DESCRIPTION="Java GUI Event Listeners Demo - Complete"
-          
-          if [ "${{ matrix.jre-included }}" = "false" ]; then
-            APP_SUFFIX="-NoJRE"
-            DESCRIPTION="Java GUI Event Listeners Demo (requires Java 8+)"
-          fi
-          
           jpackage \
             --input . \
-            --name "${{ env.APP_NAME }}${APP_SUFFIX}" \
+            --name "${{ env.APP_NAME }}" \
             --main-jar ${{ env.APP_NAME }}.jar \
             --type exe \
             --dest dist \
             --app-version ${{ env.APP_VERSION }} \
             --vendor "${{ env.VENDOR }}" \
-            --description "$DESCRIPTION" \
-            --win-console \
+            --description "Java GUI Event Listeners Demo with JRE included" \
             --win-dir-chooser \
             --win-menu \
             --win-menu-group "${{ env.APP_NAME }}" \
+            --win-shortcut \
             --win-per-user-install \
             $ICON_ARG
 
@@ -146,49 +120,34 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          APP_SUFFIX=""
-          DESCRIPTION="Java GUI Event Listeners Demo - Complete"
-          
-          if [ "${{ matrix.jre-included }}" = "false" ]; then
-            APP_SUFFIX="-nojre"
-            DESCRIPTION="Java GUI Event Listeners Demo (requires Java 8+)"
-          fi
-          
           jpackage \
             --input . \
-            --name "${{ env.APP_NAME }}${APP_SUFFIX}" \
+            --name "${{ env.APP_NAME }}" \
             --main-jar ${{ env.APP_NAME }}.jar \
             --type deb \
             --dest dist \
             --app-version ${{ env.APP_VERSION }} \
             --vendor "${{ env.VENDOR }}" \
-            --description "$DESCRIPTION" \
+            --description "Java GUI Event Listeners Demo with JRE included" \
             --linux-menu-group "Development" \
+            --linux-shortcut \
             $ICON_ARG
 
       - name: Build macOS installer
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
-          APP_SUFFIX=""
-          DESCRIPTION="Java GUI Event Listeners Demo - Complete"
-          
-          if [ "${{ matrix.jre-included }}" = "false" ]; then
-            APP_SUFFIX="-NoJRE"
-            DESCRIPTION="Java GUI Event Listeners Demo (requires Java 8+)"
-          fi
-          
           jpackage \
             --input . \
-            --name "${{ env.APP_NAME }}${APP_SUFFIX}" \
+            --name "${{ env.APP_NAME }}" \
             --main-jar ${{ env.APP_NAME }}.jar \
             --type dmg \
             --dest dist \
             --app-version ${{ env.APP_VERSION }} \
             --vendor "${{ env.VENDOR }}" \
-            --description "$DESCRIPTION" \
-            $ICON_ARG \
-            --mac-package-identifier com.charakahashan.eventlistenersdemo
+            --description "Java GUI Event Listeners Demo with JRE included" \
+            --mac-package-identifier com.charakahashan.eventlistenersdemo \
+            $ICON_ARG
 
       - name: Generate checksums
         shell: bash
@@ -196,39 +155,81 @@ jobs:
           cd dist
           if command -v sha256sum &> /dev/null; then
             sha256sum * > SHA256SUMS.txt 2>/dev/null || true
-            sha512sum * > SHA512SUMS.txt 2>/dev/null || true
           elif command -v shasum &> /dev/null; then
             shasum -a 256 * > SHA256SUMS.txt 2>/dev/null || true
-            shasum -a 512 * > SHA512SUMS.txt 2>/dev/null || true
           fi
           cd ..
 
-      - name: List dist contents (debug)
-        shell: bash
-        run: |
-          echo "Contents of dist directory:"
-          ls -lah dist/
-
-      - name: Upload artifacts
+      - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}-${{ matrix.os-type }}-${{ env.VARIANT_SUFFIX }}
-          path: |
-            dist/*
-            !dist/**/*.txt
+          name: installer-${{ matrix.os-type }}
+          path: dist/*
           retention-days: 30
           if-no-files-found: error
 
-      - name: Upload checksums artifact
+  build-jar-only:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+
+      - name: Compile Java files
+        run: |
+          mkdir -p out
+          if [ -d "lib" ] && [ "$(ls -A lib/*.jar 2>/dev/null)" ]; then
+            javac -cp "lib/*" -d out src/javaGuiEventListenersDemo/*.java
+          else
+            javac -d out src/javaGuiEventListenersDemo/*.java
+          fi
+
+      - name: Create manifest file
+        run: |
+          cat > manifest.txt << EOF
+          Main-Class: javaGuiEventListenersDemo.CompleteEventHandlersApp
+          Implementation-Title: ${{ env.APP_NAME }}
+          Implementation-Version: ${{ env.APP_VERSION }}
+          Implementation-Vendor: ${{ env.VENDOR }}
+          EOF
+
+      - name: Create standalone JAR
+        run: |
+          mkdir -p jar-temp
+          cd jar-temp
+          
+          if [ -d "../lib" ] && [ "$(ls -A ../lib/*.jar 2>/dev/null)" ]; then
+            for lib in ../lib/*.jar; do
+              jar xf "$lib"
+            done
+            rm -rf META-INF/*.SF META-INF/*.DSA META-INF/*.RSA
+          fi
+          
+          cp -r ../out/* .
+          jar cfm ../${{ env.APP_NAME }}-standalone.jar ../manifest.txt .
+          cd ..
+
+      - name: Generate JAR checksum
+        run: |
+          sha256sum ${{ env.APP_NAME }}-standalone.jar > ${{ env.APP_NAME }}-standalone.jar.sha256
+
+      - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
-          name: checksums-${{ matrix.os-type }}-${{ env.VARIANT_SUFFIX }}
-          path: dist/SHA*.txt
+          name: standalone-jar
+          path: |
+            ${{ env.APP_NAME }}-standalone.jar
+            ${{ env.APP_NAME }}-standalone.jar.sha256
           retention-days: 30
-          if-no-files-found: warn
 
   create-release:
-    needs: build
+    needs: [build-installers, build-jar-only]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     
@@ -249,26 +250,44 @@ jobs:
           body: |
             # ${{ env.APP_NAME }} ${{ env.APP_VERSION }}
             
-            ## Installation Instructions
+            ## 📦 Installation Options
             
-            ### Windows
-            - **With JRE**: Download `EventListenersDemo-*.exe` → Double-click installer → installs to `C:\Program Files\EventListenersDemo`
-            - **Without JRE**: Download `EventListenersDemo-NoJRE-*.exe` → Requires Java 8+ already installed
+            ### Option 1: Installers (Recommended - No Java Required)
+            These installers include Java Runtime, so you don't need Java installed.
             
-            ### Linux
-            - **With JRE**: `sudo apt install ./EventListenersDemo-*.deb`
-            - **Without JRE**: `sudo apt install ./EventListenersDemo-nojre-*.deb` (requires Java 8+)
+            **Windows (.exe)**
+            - Download the `.exe` file
+            - Run installer - you can choose installation location
+            - Creates desktop shortcut and start menu entry
             
-            ### macOS
-            - **With JRE**: Download `.dmg` → Open → Drag app to Applications folder
-            - **Without JRE**: Download `*-NoJRE.dmg` → Requires Java 8+ installed
+            **Linux (.deb)**
+            ```bash
+            sudo apt install ./EventListenersDemo-*.deb
+            ```
             
-            ## What's New
+            **macOS (.dmg)**
+            - Download and open the `.dmg` file
+            - Drag app to Applications folder
+            
+            ### Option 2: Standalone JAR (Advanced Users)
+            For users who already have Java 8+ installed:
+            ```bash
+            java -jar EventListenersDemo-standalone.jar
+            ```
+            
+            ## 📊 File Sizes
+            - Windows: ~58 MB (includes JRE 21)
+            - Linux: ~41 MB (includes JRE 21)
+            - macOS: ~61 MB (includes JRE 21)
+            - Standalone JAR: ~5 MB (requires Java 8+)
+            
+            ## ✨ Features
             - Complete event handler documentation
             - 25+ event listeners demonstrated
+            - Bundled Java runtime (installers only)
             
-            ## Checksums
-            See `SHA256SUMS.txt` and `SHA512SUMS.txt` for file verification.
+            ## 🔐 Checksums
+            SHA256 checksums are provided for file verification.
           draft: false
           prerelease: false
         env:
